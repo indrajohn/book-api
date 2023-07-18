@@ -2,6 +2,7 @@ package com.book.BookAPI.services;
 
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +19,7 @@ import com.book.BookAPI.utils.Utils;
 @Service
 public class BookServices {
 
+	@Autowired
 	private BookRepo bookRepo;
 	
 	public Page<Book> getPagination(Integer currentPage, Integer rowLimit, Book searchingBook) {

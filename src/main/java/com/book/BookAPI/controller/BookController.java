@@ -24,10 +24,12 @@ import com.book.BookAPI.utils.Utils;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/v1/book")
 @Api(tags = "Book Controller")
+@Slf4j
 public class BookController {
 	
 	@Autowired
@@ -113,10 +115,12 @@ public class BookController {
 
 		try {
 			User user = authServices.validateToken(token);
+			log.info(book.toString());
 
 			book.setCreatedBy(user.getId());
 			long unixTime = System.currentTimeMillis() / 1000L;
 			book.setCreatedDate(unixTime);
+			book.setActive(1);
 			return ResponseEntity.ok(Utils.setStatusMessageSuccess(bookServices.save(book)));
 		} catch (Exception e) {
 			throw new ApiRequestException(e.getMessage());
