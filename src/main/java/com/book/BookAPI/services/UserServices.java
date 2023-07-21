@@ -1,6 +1,12 @@
 package com.book.BookAPI.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.domain.Sort.Order;
 import org.springframework.stereotype.Service;
 
 import com.book.BookAPI.entity.User;
@@ -14,6 +20,20 @@ public class UserServices {
 	
 	@Autowired
 	private UserRepo userRepo;
+	
+	
+	public Page<User> getPagination(Integer currentPage, Integer rowLimit) {
+		currentPage--;
+		if (currentPage < 0) {
+			throw new ApiRequestException(Utils.DATA_NOT_FOUND);
+		}
+		Order order = new Sort.Order(Direction.DESC, "createdDate");
+		Pageable pagination = PageRequest.of(currentPage, rowLimit, Sort.by(order));
+
+		Page<User> pagable = userRepo.findAllByActive(pagination, 1);
+
+		return pagable;
+	}
 	
 	public User get(Integer id) throws Exception {
 		User user = userRepo.findByIdAndActive(id,1).orElse(new User());

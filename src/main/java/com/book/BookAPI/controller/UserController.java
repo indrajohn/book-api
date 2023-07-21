@@ -12,33 +12,27 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.book.BookAPI.entity.Book;
 import com.book.BookAPI.entity.User;
 import com.book.BookAPI.exception.ApiRequestException;
 import com.book.BookAPI.services.AuthServices;
-import com.book.BookAPI.services.BookServices;
+import com.book.BookAPI.services.UserServices;
 import com.book.BookAPI.utils.Utils;
 
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import lombok.extern.slf4j.Slf4j;
 
 @RestController
-@RequestMapping("/v1/book")
-@Api(tags = "Book Controller")
-@Slf4j
-public class BookController {
+@RequestMapping("/v1/user")
+@Api(tags = "User Controller")
+public class UserController {
 
 	@Autowired
-	private BookServices bookServices;
+	private UserServices userServices;
 
 	@Autowired
 	private AuthServices authServices;
 
-	@ApiOperation(value = "This method is used to get specific book")
 	@GetMapping("/{id}")
 	public ResponseEntity<?> get(
 			@RequestHeader(value = Utils.AUTHORIZATION, required = false) String authorizationHeader,
@@ -50,20 +44,18 @@ public class BookController {
 
 		try {
 			authServices.validateToken(token);
-			return ResponseEntity.ok(Utils.setStatusMessageSuccess(bookServices.getOne(id)));
+			return ResponseEntity.ok(Utils.setStatusMessageSuccess(userServices.get(id)));
 		} catch (Exception e) {
 			throw new ApiRequestException(e.getMessage());
 		}
 	}
 
-	@ApiOperation(value = "This method is used to get book with pagination")
 	@GetMapping("/{currentPage}/{rowLimit}")
 	public ResponseEntity<?> getPagination(
 			@RequestHeader(value = Utils.AUTHORIZATION, required = false) String authorizationHeader,
 			@CookieValue(value = "__HID", required = false) String cookieValue,
-			@PathVariable("currentPage") Integer currentPage, @PathVariable("rowLimit") Integer rowLimit,
-			@RequestParam(value = "name", required = false) String name,
-			@RequestParam(value = "isbn", required = false) String isbn) {
+			@PathVariable("currentPage") Integer currentPage, @PathVariable("rowLimit") Integer rowLimit
+		) {
 
 		if ((authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) && cookieValue == null) {
 			throw new ApiRequestException(Utils.NOT_AUTHORIZED);
@@ -72,11 +64,7 @@ public class BookController {
 
 		try {
 			authServices.validateToken(token);
-
-			Book searchBook = new Book();
-			searchBook.setIsbn(isbn);
-			searchBook.setName(name);
-			Page<Book> pageable = bookServices.getPagination(currentPage, rowLimit, searchBook);
+			Page<User> pageable = userServices.getPagination(currentPage, rowLimit);
 			return ResponseEntity.ok(Utils.setStatusMessageSuccessPagination(pageable.getContent(),
 					pageable.getTotalPages(), pageable.getTotalElements(), rowLimit, currentPage++));
 		} catch (Exception e) {
@@ -84,29 +72,6 @@ public class BookController {
 		}
 	}
 
-	@ApiOperation(value = "This method is used to get book with pagination")
-	@GetMapping("/searchByUser/{currentPage}/{rowLimit}")
-	public ResponseEntity<?> getPaginationByUser(
-			@RequestHeader(value = Utils.AUTHORIZATION, required = false) String authorizationHeader,
-			@CookieValue(value = "__HID", required = false) String cookieValue,
-			@PathVariable("currentPage") Integer currentPage, @PathVariable("rowLimit") Integer rowLimit) {
-
-		if ((authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) && cookieValue == null) {
-			throw new ApiRequestException(Utils.NOT_AUTHORIZED);
-		}
-		String token = authorizationHeader != null ? authorizationHeader.substring(7) : cookieValue;
-
-		try {
-			User user = authServices.validateToken(token);
-			Page<Book> pageable = bookServices.getPaginationByUser(currentPage, rowLimit, user);
-			return ResponseEntity.ok(Utils.setStatusMessageSuccessPagination(pageable.getContent(),
-					pageable.getTotalPages(), pageable.getTotalElements(), rowLimit, currentPage++));
-		} catch (Exception e) {
-			throw new ApiRequestException(e.getMessage());
-		}
-	}
-
-	@ApiOperation(value = "This method is used to delete book")
 	@DeleteMapping("/{id}")
 	public ResponseEntity<?> delete(
 			@RequestHeader(value = Utils.AUTHORIZATION, required = false) String authorizationHeader,
@@ -119,43 +84,39 @@ public class BookController {
 
 		try {
 			authServices.validateToken(token);
-			return ResponseEntity.ok(Utils.setStatusMessageSuccess(bookServices.delete(id)));
+			return ResponseEntity.ok(Utils.setStatusMessageSuccess(userServices.delete(id)));
 		} catch (Exception e) {
 			throw new ApiRequestException(e.getMessage());
 		}
 	}
 
-	@ApiOperation(value = "This method is used to save book")
 	@PostMapping
 	public ResponseEntity<?> save(
 			@RequestHeader(value = Utils.AUTHORIZATION, required = false) String authorizationHeader,
-			@CookieValue(value = "__HID", required = false) String cookieValue, @RequestBody final Book book) {
+			@CookieValue(value = "__HID", required = false) String cookieValue, @RequestBody final User user) {
 		if ((authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) && cookieValue == null) {
 			throw new ApiRequestException(Utils.NOT_AUTHORIZED);
 		}
 		String token = authorizationHeader != null ? authorizationHeader.substring(7) : cookieValue;
 
 		try {
-			User user = authServices.validateToken(token);
-			log.info(book.toString());
+			authServices.validateToken(token);
 
-			book.setCreatedBy(user.getId());
-			book.setBorrower(user);
+			user.setCreatedBy(user.getId());
 			long unixTime = System.currentTimeMillis() / 1000L;
-			book.setCreatedDate(unixTime);
-			book.setActive(1);
-			return ResponseEntity.ok(Utils.setStatusMessageSuccess(bookServices.save(book)));
+			user.setCreatedDate(unixTime);
+			user.setActive(1);
+			return ResponseEntity.ok(Utils.setStatusMessageSuccess(userServices.save(user)));
 		} catch (Exception e) {
 			throw new ApiRequestException(e.getMessage());
 		}
 	}
-
-	@ApiOperation(value = "This method is used to edit book")
+	
 	@PutMapping("/{id}")
 	public ResponseEntity<?> edit(
 			@RequestHeader(value = Utils.AUTHORIZATION, required = false) String authorizationHeader,
 			@CookieValue(value = "__HID", required = false) String cookieValue, @PathVariable("id") Integer id,
-			@RequestBody final Book book) {
+			@RequestBody final User borrower) {
 		if ((authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) && cookieValue == null) {
 			throw new ApiRequestException(Utils.NOT_AUTHORIZED);
 		}
@@ -164,10 +125,11 @@ public class BookController {
 		try {
 			User user = authServices.validateToken(token);
 
-			book.setUpdatedBy(user.getId());
+			
+			borrower.setUpdatedBy(user.getId());
 			long unixTime = System.currentTimeMillis() / 1000L;
-			book.setUpdatedDate(unixTime);
-			return ResponseEntity.ok(Utils.setStatusMessageSuccess(bookServices.save(book)));
+			borrower.setUpdatedDate(unixTime);
+			return ResponseEntity.ok(Utils.setStatusMessageSuccess(userServices.save(borrower)));
 		} catch (Exception e) {
 			throw new ApiRequestException(e.getMessage());
 		}

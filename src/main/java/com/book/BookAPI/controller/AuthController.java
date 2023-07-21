@@ -40,8 +40,8 @@ public class AuthController {
 		try {
 			User user = authServices.validateToken(token);
 			UserInformation userInformation = new UserInformation();
-			userInformation.setFirstName(user.getFirstName());
-			userInformation.setLastName(user.getLastName());
+			userInformation.setFirstName(user.getGivenName());
+			userInformation.setLastName(user.getFamilyName());
 			userInformation.setEmail(user.getEmail());
 			userInformation.setPhoneNumber(user.getPhoneNumber());
 			userInformation.setUsername(user.getUsername());
@@ -76,8 +76,8 @@ public class AuthController {
 			User signInAuth = response.getResults();
 
 			UserInformation userInformation = new UserInformation();
-			userInformation.setFirstName(signInAuth.getFirstName());
-			userInformation.setLastName(signInAuth.getLastName());
+			userInformation.setFirstName(signInAuth.getGivenName());
+			userInformation.setLastName(signInAuth.getFamilyName());
 			userInformation.setEmail(signInAuth.getEmail());
 			userInformation.setPhoneNumber(signInAuth.getPhoneNumber());
 			userInformation.setUsername(signInAuth.getUsername());

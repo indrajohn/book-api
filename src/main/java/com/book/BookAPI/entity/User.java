@@ -30,11 +30,11 @@ public class User implements Serializable {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
 
-	@Column(name = "FIRST_NAME")
-	private String firstName;
+	@Column(name = "GIVEN_NAME")
+	private String givenName;
 
-	@Column(name = "LAST_NAME")
-	private String lastName;
+	@Column(name = "FAMILY_NAME")
+	private String familyName;
 
 	@Column(name = "USERNAME")
 	private String username;

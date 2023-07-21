@@ -12,6 +12,7 @@ import org.springframework.data.domain.Sort.Order;
 import org.springframework.stereotype.Service;
 
 import com.book.BookAPI.entity.Book;
+import com.book.BookAPI.entity.User;
 import com.book.BookAPI.exception.ApiRequestException;
 import com.book.BookAPI.repo.BookRepo;
 import com.book.BookAPI.utils.Utils;
@@ -46,6 +47,18 @@ public class BookServices {
 		
 			
 		return bookRepo.findAllByActive(pagination, 1);
+	}
+	
+	public Page<Book> getPaginationByUser(Integer currentPage, Integer rowLimit, User user) {
+		currentPage--;
+		if (currentPage < 0) {
+			throw new ApiRequestException(Utils.DATA_NOT_FOUND);
+		}
+		Order order = new Sort.Order(Direction.DESC, "createdDate");
+		
+		Pageable pagination = PageRequest.of(currentPage, rowLimit,Sort.by(order));
+		
+		return bookRepo.findAllByActiveAndBorrower(pagination, 1,user);
 	}
 	
 	public Book getOne(Integer id) throws Exception {

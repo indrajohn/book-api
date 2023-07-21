@@ -2,11 +2,14 @@ package com.book.BookAPI.entity;
 
 import java.io.Serializable;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -36,6 +39,10 @@ public class Book implements Serializable {
 	
 	@Column(name = "DATE_PUBLISHED")
 	private Long datePublished;
+	
+	@OneToOne(cascade = CascadeType.ALL)
+	@JoinColumn(name = "BORROW_BY", referencedColumnName = "id")
+	private User borrower;
 	
 	@Column(name = "CREATED_BY")
 	private Integer createdBy;
